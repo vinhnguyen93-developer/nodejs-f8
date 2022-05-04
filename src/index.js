@@ -1,14 +1,21 @@
 const express = require('express');
 const morgan = require('morgan');
-
+const methodOverride = require('method-override');
 const { engine } = require('express-handlebars');
 const path = require('path');
 const { application } = require('express');
 
 const route = require('./routes');
+const db = require('./config/db');
 
 const app = express();
 const port = 4000;
+
+// Connect to database
+db.connect();
+
+// override with POST having
+app.use(methodOverride('_method'));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -23,14 +30,17 @@ app.engine(
   'hbs',
   engine({
     extname: '.hbs',
+    helpers: {
+      sum: (a, b) => a + b,
+    },
   })
 );
 app.set('view engine', 'hbs');
-app.set('views', path.join(__dirname, 'resources/views'));
+app.set('views', path.join(__dirname, 'resources', 'views'));
 
 // Routes init
 route(app);
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`App listening on port ${port}`);
 });
